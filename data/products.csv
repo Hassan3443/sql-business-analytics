@@ -1,0 +1,26 @@
+product_id,product_name,category,unit_price
+1,Wireless Mouse,Electronics,3172.25
+2,Bluetooth Speaker,Electronics,3395.76
+3,USB-C Hub,Electronics,4104.0
+4,Webcam HD,Electronics,4220.25
+5,Mechanical Keyboard,Electronics,1117.36
+6,T-Shirt,Clothing,469.22
+7,Jeans,Clothing,301.11
+8,Hoodie,Clothing,665.75
+9,Sneakers,Clothing,179.77
+10,Cap,Clothing,1061.01
+11,Coffee Maker,Home & Kitchen,1767.86
+12,Blender,Home & Kitchen,2059.51
+13,Cookware Set,Home & Kitchen,1323.24
+14,Desk Lamp,Home & Kitchen,2297.89
+15,Air Fryer,Home & Kitchen,2120.26
+16,Python Handbook,Books,345.31
+17,Data Science 101,Books,337.89
+18,Novel,Books,149.12
+19,Cookbook,Books,190.52
+20,Biography,Books,98.02
+21,Yoga Mat,Sports,1170.09
+22,Dumbbells,Sports,762.79
+23,Football,Sports,1480.95
+24,Jump Rope,Sports,505.37
+25,Water Bottle,Sports,703.58

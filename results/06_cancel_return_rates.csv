@@ -1,0 +1,5 @@
+status,orders,pct_of_orders
+delivered,1698,77.6
+shipped,271,12.4
+cancelled,123,5.6
+returned,95,4.3
