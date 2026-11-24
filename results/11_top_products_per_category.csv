@@ -1,0 +1,16 @@
+category,category_rank,product_name,revenue
+Books,1,Data Science 101,52035.06
+Books,2,Python Handbook,42473.13
+Books,3,Cookbook,27053.84
+Clothing,1,Cap,141114.33
+Clothing,2,Hoodie,82553.0
+Clothing,3,T-Shirt,71321.44
+Electronics,1,Webcam HD,637257.75
+Electronics,2,USB-C Hub,611496.0
+Electronics,3,Bluetooth Speaker,485593.68
+Home & Kitchen,1,Desk Lamp,353875.06
+Home & Kitchen,2,Blender,325402.58
+Home & Kitchen,3,Air Fryer,243829.9
+Sports,1,Football,182156.85
+Sports,2,Yoga Mat,172003.23
+Sports,3,Water Bottle,124533.66

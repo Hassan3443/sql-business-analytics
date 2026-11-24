@@ -1,0 +1,12 @@
+digraph ERD {
+  graph [rankdir=LR, fontname="Helvetica", labelloc=t, fontsize=18, label="Entity Relationship Diagram\n", dpi=130, pad=0.3, nodesep=0.6, ranksep=1.2];
+  node [shape=plain, fontname="Helvetica", fontsize=12];
+  edge [fontname="Helvetica", fontsize=10, color="#334155", arrowhead=crow, arrowtail=tee, dir=both];
+  customers [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="5"><tr><td bgcolor="#dbeafe"><b>customers</b></td></tr><tr><td align="left">PK customer_id</td></tr><tr><td align="left">name</td></tr><tr><td align="left">region</td></tr><tr><td align="left">signup_date</td></tr></table>>];
+  orders [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="5"><tr><td bgcolor="#dbeafe"><b>orders</b></td></tr><tr><td align="left">PK order_id</td></tr><tr><td align="left">FK customer_id</td></tr><tr><td align="left">order_date</td></tr><tr><td align="left">status</td></tr></table>>];
+  order_items [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="5"><tr><td bgcolor="#dbeafe"><b>order_items</b></td></tr><tr><td align="left">PK item_id</td></tr><tr><td align="left">FK order_id</td></tr><tr><td align="left">FK product_id</td></tr><tr><td align="left">quantity</td></tr><tr><td align="left">unit_price</td></tr></table>>];
+  products [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="5"><tr><td bgcolor="#dbeafe"><b>products</b></td></tr><tr><td align="left">PK product_id</td></tr><tr><td align="left">product_name</td></tr><tr><td align="left">category</td></tr><tr><td align="left">unit_price</td></tr></table>>];
+  customers -> orders [label="places"];
+  orders -> order_items [label="contains"];
+  products -> order_items [label="sold as"];
+}
