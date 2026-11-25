@@ -50,9 +50,12 @@
     const sel = $('#metric'); const prev = sel.value; const sameShape = false;
     sel.innerHTML = numCols.map(i => `<option value="${i}">${last.columns[i]}</option>`).join('');
     const names = numCols.map(i => last.columns[i]);
-    const good = names.findIndex(n => /revenue|value|spend|total|share|pct|rate|orders|customers|count/i.test(n));
-    const ok = names.findIndex(n => !/(^|_)(id|rank|decile|quarter|line_items|days|number)($|_)/i.test(n));
-    const def = numCols[good >= 0 ? good : ok >= 0 ? ok : 0];
+    const idLike = n => /(^|_)(id|rank|decile|quarter|line_items|days|number)($|_)/i.test(n);
+    const pref = /revenue|value|total|share|pct|rate|orders|customers|count/i;
+    let k = names.findIndex(n => !idLike(n) && /revenue|value|total|spend/i.test(n));
+    if (k < 0) k = names.findIndex(n => !idLike(n) && pref.test(n));
+    if (k < 0) k = names.findIndex(n => !idLike(n));
+    const def = numCols[k >= 0 ? k : 0];
     sel.value = numCols.includes(+prev) && Array.from(sel.options).some(o => o.value === prev) && prev !== '' && sameShape ? prev : String(def);
     draw();
   }
