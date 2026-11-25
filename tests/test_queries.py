@@ -59,3 +59,42 @@ def test_region_shares_sum_to_100(conn):
     df = run(conn, "15_region_share_and_rank")
     assert df["pct_of_total"].sum() == pytest.approx(100, abs=0.5)
     assert df["gap_to_leader"].iloc[0] == 0
+
+
+def test_lifetime_value_matches_delivered_revenue(conn):
+    ltv = run(conn, "17_customer_lifetime_value")
+    monthly = run(conn, "01_monthly_revenue")
+    assert ltv["lifetime_value"].sum() == pytest.approx(monthly["revenue"].sum(), rel=1e-4)
+    assert set(ltv["value_tier"]) == {"Top 25%", "Upper middle", "Lower middle", "Bottom 25%"}
+    assert ltv["lifetime_value"].is_monotonic_decreasing
+
+
+def test_products_bought_together_pairs_are_ordered_and_distinct(conn):
+    df = run(conn, "18_products_bought_together")
+    assert (df["product_a"] != df["product_b"]).all()
+    assert df["orders_together"].is_monotonic_decreasing
+
+
+def test_customers_at_risk_are_repeat_buyers_and_inactive(conn):
+    df = run(conn, "19_customers_at_risk")
+    assert (df["delivered_orders"] >= 2).all()
+    assert (df["days_since_last_order"] > 90).all()
+
+
+def test_basket_shares_sum_to_100_and_value_grows_with_items(conn):
+    df = run(conn, "20_basket_size_and_value")
+    assert df["pct_of_orders"].sum() == pytest.approx(100, abs=0.5)
+    assert df["avg_order_value"].is_monotonic_increasing
+
+
+def test_category_mix_adds_up(conn):
+    df = run(conn, "21_category_mix_by_region")
+    assert (df[["electronics_pct", "books_pct", "other_pct"]].sum(axis=1)).between(99.7, 100.3).all()
+
+
+def test_site_export_matches_queries(conn):
+    import json
+    subprocess.run([sys.executable, "src/export_site.py"], cwd=ROOT, check=True, capture_output=True)
+    exported = json.loads((ROOT / "docs" / "queries.json").read_text())
+    assert [q["id"] for q in exported] == [p.stem for p in QUERIES]
+    assert (ROOT / "docs" / "sales.db").stat().st_size > 0

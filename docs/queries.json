@@ -1,0 +1,149 @@
+[
+ {
+  "id": "01_monthly_revenue",
+  "number": 1,
+  "title": "Monthly revenue",
+  "description": "How does delivered revenue trend month over month?",
+  "sql": "-- How does delivered revenue trend month over month?\nSELECT\n    strftime('%Y-%m', o.order_date) AS month,\n    COUNT(DISTINCT o.order_id) AS orders,\n    ROUND(SUM(i.quantity * i.unit_price), 2) AS revenue\nFROM orders o\nJOIN order_items i ON i.order_id = o.order_id\nWHERE o.status = 'delivered'\nGROUP BY month\nORDER BY month;"
+ },
+ {
+  "id": "02_top_customers",
+  "number": 2,
+  "title": "Top customers",
+  "description": "Who are the top 10 customers by lifetime delivered revenue?",
+  "sql": "-- Who are the top 10 customers by lifetime delivered revenue?\nSELECT\n    c.customer_id,\n    c.name,\n    c.region,\n    COUNT(DISTINCT o.order_id) AS orders,\n    ROUND(SUM(i.quantity * i.unit_price), 2) AS lifetime_revenue\nFROM customers c\nJOIN orders o ON o.customer_id = c.customer_id AND o.status = 'delivered'\nJOIN order_items i ON i.order_id = o.order_id\nGROUP BY c.customer_id\nORDER BY lifetime_revenue DESC\nLIMIT 10;"
+ },
+ {
+  "id": "03_category_performance",
+  "number": 3,
+  "title": "Category performance",
+  "description": "Which product categories drive revenue and units sold?",
+  "sql": "-- Which product categories drive revenue and units sold?\nSELECT\n    p.category,\n    COUNT(DISTINCT o.order_id) AS orders,\n    SUM(i.quantity) AS units_sold,\n    ROUND(SUM(i.quantity * i.unit_price), 2) AS revenue,\n    ROUND(100.0 * SUM(i.quantity * i.unit_price) /\n        (SELECT SUM(quantity * unit_price) FROM order_items i2\n         JOIN orders o2 ON o2.order_id = i2.order_id AND o2.status = 'delivered'), 1) AS revenue_share_pct\nFROM order_items i\nJOIN orders o ON o.order_id = i.order_id AND o.status = 'delivered'\nJOIN products p ON p.product_id = i.product_id\nGROUP BY p.category\nORDER BY revenue DESC;"
+ },
+ {
+  "id": "04_region_analysis",
+  "number": 4,
+  "title": "Region analysis",
+  "description": "How do regions compare on revenue, customers and average order value?",
+  "sql": "-- How do regions compare on revenue, customers and average order value?\nSELECT\n    c.region,\n    COUNT(DISTINCT c.customer_id) AS customers,\n    COUNT(DISTINCT o.order_id) AS orders,\n    ROUND(SUM(i.quantity * i.unit_price), 2) AS revenue,\n    ROUND(SUM(i.quantity * i.unit_price) / COUNT(DISTINCT o.order_id), 2) AS avg_order_value\nFROM customers c\nJOIN orders o ON o.customer_id = c.customer_id AND o.status = 'delivered'\nJOIN order_items i ON i.order_id = o.order_id\nGROUP BY c.region\nORDER BY revenue DESC;"
+ },
+ {
+  "id": "05_repeat_purchase_rate",
+  "number": 5,
+  "title": "Repeat purchase rate",
+  "description": "What share of customers placed more than one order?",
+  "sql": "-- What share of customers placed more than one order?\nWITH order_counts AS (\n    SELECT customer_id, COUNT(*) AS n_orders\n    FROM orders\n    WHERE status != 'cancelled'\n    GROUP BY customer_id\n)\nSELECT\n    COUNT(*) AS total_customers,\n    SUM(CASE WHEN n_orders > 1 THEN 1 ELSE 0 END) AS repeat_customers,\n    ROUND(100.0 * SUM(CASE WHEN n_orders > 1 THEN 1 ELSE 0 END) / COUNT(*), 1) AS repeat_rate_pct\nFROM order_counts;"
+ },
+ {
+  "id": "06_cancel_return_rates",
+  "number": 6,
+  "title": "Cancel return rates",
+  "description": "How healthy is fulfillment? Order counts and rates by status.",
+  "sql": "-- How healthy is fulfillment? Order counts and rates by status.\nSELECT\n    status,\n    COUNT(*) AS orders,\n    ROUND(100.0 * COUNT(*) / (SELECT COUNT(*) FROM orders), 1) AS pct_of_orders\nFROM orders\nGROUP BY status\nORDER BY orders DESC;"
+ },
+ {
+  "id": "07_top_products",
+  "number": 7,
+  "title": "Top products",
+  "description": "Which 10 products sell the most units, and what revenue do they bring?",
+  "sql": "-- Which 10 products sell the most units, and what revenue do they bring?\nSELECT\n    p.product_name,\n    p.category,\n    SUM(i.quantity) AS units_sold,\n    ROUND(SUM(i.quantity * i.unit_price), 2) AS revenue\nFROM order_items i\nJOIN orders o ON o.order_id = i.order_id AND o.status = 'delivered'\nJOIN products p ON p.product_id = i.product_id\nGROUP BY p.product_id\nORDER BY units_sold DESC\nLIMIT 10;"
+ },
+ {
+  "id": "08_customer_cohort_revenue",
+  "number": 8,
+  "title": "Customer cohort revenue",
+  "description": "Do older customer cohorts (by signup quarter) spend more?",
+  "sql": "-- Do older customer cohorts (by signup quarter) spend more?\nSELECT\n    strftime('%Y', c.signup_date) || '-Q' ||\n        ((CAST(strftime('%m', c.signup_date) AS INTEGER) + 2) / 3) AS signup_quarter,\n    COUNT(DISTINCT c.customer_id) AS customers,\n    ROUND(SUM(i.quantity * i.unit_price), 2) AS revenue,\n    ROUND(SUM(i.quantity * i.unit_price) / COUNT(DISTINCT c.customer_id), 2) AS revenue_per_customer\nFROM customers c\nJOIN orders o ON o.customer_id = c.customer_id AND o.status = 'delivered'\nJOIN order_items i ON i.order_id = o.order_id\nGROUP BY signup_quarter\nORDER BY signup_quarter;"
+ },
+ {
+  "id": "09_running_total_revenue",
+  "number": 9,
+  "title": "Running total revenue",
+  "description": "Running (cumulative) delivered revenue by month, with each month's share of the total. Window functions: SUM() OVER (ORDER BY ...), SUM() OVER ()",
+  "sql": "-- Running (cumulative) delivered revenue by month, with each month's share of the total.\n-- Window functions: SUM() OVER (ORDER BY ...), SUM() OVER ()\nWITH monthly AS (\n    SELECT strftime('%Y-%m', o.order_date) AS month,\n           SUM(i.quantity * i.unit_price) AS revenue\n    FROM orders o\n    JOIN order_items i ON i.order_id = o.order_id\n    WHERE o.status = 'delivered'\n    GROUP BY month\n)\nSELECT month,\n       ROUND(revenue, 2) AS revenue,\n       ROUND(SUM(revenue) OVER (ORDER BY month), 2) AS cumulative_revenue,\n       ROUND(100.0 * revenue / SUM(revenue) OVER (), 2) AS pct_of_total\nFROM monthly\nORDER BY month;"
+ },
+ {
+  "id": "10_mom_growth",
+  "number": 10,
+  "title": "Mom growth",
+  "description": "Month-over-month revenue growth and 3-month moving average. Window functions: LAG(), AVG() OVER (ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)",
+  "sql": "-- Month-over-month revenue growth and 3-month moving average.\n-- Window functions: LAG(), AVG() OVER (ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)\nWITH monthly AS (\n    SELECT strftime('%Y-%m', o.order_date) AS month,\n           SUM(i.quantity * i.unit_price) AS revenue\n    FROM orders o\n    JOIN order_items i ON i.order_id = o.order_id\n    WHERE o.status = 'delivered'\n    GROUP BY month\n)\nSELECT month,\n       ROUND(revenue, 2) AS revenue,\n       ROUND(LAG(revenue) OVER (ORDER BY month), 2) AS prev_month_revenue,\n       ROUND(100.0 * (revenue - LAG(revenue) OVER (ORDER BY month))\n             / LAG(revenue) OVER (ORDER BY month), 1) AS mom_growth_pct,\n       ROUND(AVG(revenue) OVER (ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW), 2) AS moving_avg_3m\nFROM monthly\nORDER BY month;"
+ },
+ {
+  "id": "11_top_products_per_category",
+  "number": 11,
+  "title": "Top products per category",
+  "description": "Top 3 products by revenue inside each category. Window function: RANK() OVER (PARTITION BY category ORDER BY revenue DESC)",
+  "sql": "-- Top 3 products by revenue inside each category.\n-- Window function: RANK() OVER (PARTITION BY category ORDER BY revenue DESC)\nWITH product_revenue AS (\n    SELECT p.category,\n           p.product_name,\n           SUM(i.quantity * i.unit_price) AS revenue\n    FROM order_items i\n    JOIN products p ON p.product_id = i.product_id\n    JOIN orders o ON o.order_id = i.order_id AND o.status = 'delivered'\n    GROUP BY p.category, p.product_name\n),\nranked AS (\n    SELECT category, product_name, revenue,\n           RANK() OVER (PARTITION BY category ORDER BY revenue DESC) AS category_rank\n    FROM product_revenue\n)\nSELECT category, category_rank, product_name, ROUND(revenue, 2) AS revenue\nFROM ranked\nWHERE category_rank <= 3\nORDER BY category, category_rank;"
+ },
+ {
+  "id": "12_customer_spend_deciles",
+  "number": 12,
+  "title": "Customer spend deciles",
+  "description": "Split customers into 10 spend deciles (1 = biggest spenders) and show how concentrated revenue is. Window function: NTILE(10)",
+  "sql": "-- Split customers into 10 spend deciles (1 = biggest spenders) and show how\n-- concentrated revenue is. Window function: NTILE(10)\nWITH customer_spend AS (\n    SELECT o.customer_id,\n           SUM(i.quantity * i.unit_price) AS spend\n    FROM orders o\n    JOIN order_items i ON i.order_id = o.order_id\n    WHERE o.status = 'delivered'\n    GROUP BY o.customer_id\n),\ndeciles AS (\n    SELECT customer_id, spend,\n           NTILE(10) OVER (ORDER BY spend DESC) AS spend_decile\n    FROM customer_spend\n)\nSELECT spend_decile,\n       COUNT(*) AS customers,\n       ROUND(SUM(spend), 2) AS revenue,\n       ROUND(100.0 * SUM(spend) / (SELECT SUM(spend) FROM customer_spend), 1) AS pct_of_revenue,\n       ROUND(MIN(spend), 2) AS min_spend,\n       ROUND(MAX(spend), 2) AS max_spend\nFROM deciles\nGROUP BY spend_decile\nORDER BY spend_decile;"
+ },
+ {
+  "id": "13_days_between_orders",
+  "number": 13,
+  "title": "Days between orders",
+  "description": "Average days between consecutive orders per repeat customer. Window function: LAG(order_date) OVER (PARTITION BY customer_id ORDER BY order_date)",
+  "sql": "-- Average days between consecutive orders per repeat customer.\n-- Window function: LAG(order_date) OVER (PARTITION BY customer_id ORDER BY order_date)\nWITH gaps AS (\n    SELECT customer_id,\n           order_date,\n           julianday(order_date)\n             - julianday(LAG(order_date) OVER (PARTITION BY customer_id ORDER BY order_date, order_id)) AS days_since_prev\n    FROM orders\n    WHERE status IN ('delivered', 'shipped')\n)\nSELECT customer_id,\n       COUNT(days_since_prev) AS repeat_orders,\n       ROUND(AVG(days_since_prev), 1) AS avg_days_between_orders,\n       MIN(days_since_prev) AS shortest_gap,\n       MAX(days_since_prev) AS longest_gap\nFROM gaps\nWHERE days_since_prev IS NOT NULL\nGROUP BY customer_id\nORDER BY repeat_orders DESC, avg_days_between_orders\nLIMIT 20;"
+ },
+ {
+  "id": "14_first_and_latest_order",
+  "number": 14,
+  "title": "First and latest order",
+  "description": "For every customer: first order, latest order, and order count, using ROW_NUMBER() to pick the first and latest rows. Shows the 20 most recent first orders.",
+  "sql": "-- For every customer: first order, latest order, and order count, using\n-- ROW_NUMBER() to pick the first and latest rows. Shows the 20 most recent first orders.\nWITH numbered AS (\n    SELECT o.customer_id,\n           o.order_id,\n           o.order_date,\n           ROW_NUMBER() OVER (PARTITION BY o.customer_id ORDER BY o.order_date, o.order_id) AS rn_first,\n           ROW_NUMBER() OVER (PARTITION BY o.customer_id ORDER BY o.order_date DESC, o.order_id DESC) AS rn_last,\n           COUNT(*) OVER (PARTITION BY o.customer_id) AS total_orders\n    FROM orders o\n)\nSELECT f.customer_id,\n       f.order_date AS first_order_date,\n       l.order_date AS latest_order_date,\n       f.total_orders,\n       CAST(julianday(l.order_date) - julianday(f.order_date) AS INTEGER) AS customer_lifetime_days\nFROM numbered f\nJOIN numbered l ON l.customer_id = f.customer_id AND l.rn_last = 1\nWHERE f.rn_first = 1\nORDER BY f.order_date DESC, f.customer_id\nLIMIT 20;"
+ },
+ {
+  "id": "15_region_share_and_rank",
+  "number": 15,
+  "title": "Region share and rank",
+  "description": "Each region's revenue, share of company revenue and rank, plus the gap to the leader. Window functions: RANK(), SUM() OVER (), FIRST_VALUE()",
+  "sql": "-- Each region's revenue, share of company revenue and rank, plus the gap to the leader.\n-- Window functions: RANK(), SUM() OVER (), FIRST_VALUE()\nWITH region_revenue AS (\n    SELECT c.region,\n           SUM(i.quantity * i.unit_price) AS revenue\n    FROM customers c\n    JOIN orders o ON o.customer_id = c.customer_id AND o.status = 'delivered'\n    JOIN order_items i ON i.order_id = o.order_id\n    GROUP BY c.region\n)\nSELECT region,\n       ROUND(revenue, 2) AS revenue,\n       RANK() OVER (ORDER BY revenue DESC) AS revenue_rank,\n       ROUND(100.0 * revenue / SUM(revenue) OVER (), 1) AS pct_of_total,\n       ROUND(revenue - FIRST_VALUE(revenue) OVER (ORDER BY revenue DESC), 2) AS gap_to_leader\nFROM region_revenue\nORDER BY revenue_rank;"
+ },
+ {
+  "id": "16_customer_retention_by_quarter",
+  "number": 16,
+  "title": "Customer retention by quarter",
+  "description": "Quarterly active customers and how many of them were also active the previous quarter. Uses a self-join on a CTE plus LAG() for the quarter-over-quarter change.",
+  "sql": "-- Quarterly active customers and how many of them were also active the previous quarter.\n-- Uses a self-join on a CTE plus LAG() for the quarter-over-quarter change.\nWITH active AS (\n    SELECT DISTINCT o.customer_id,\n           strftime('%Y', o.order_date) || '-Q' ||\n               ((CAST(strftime('%m', o.order_date) AS INTEGER) + 2) / 3) AS quarter\n    FROM orders o\n    WHERE o.status IN ('delivered', 'shipped')\n),\nper_quarter AS (\n    SELECT quarter, COUNT(*) AS active_customers FROM active GROUP BY quarter\n),\nretained AS (\n    SELECT cur.quarter,\n           COUNT(*) AS retained_customers\n    FROM active cur\n    JOIN active prev\n      ON prev.customer_id = cur.customer_id\n     AND prev.quarter = (\n            CASE\n              WHEN substr(cur.quarter, 7, 1) = '1'\n                THEN CAST(CAST(substr(cur.quarter, 1, 4) AS INTEGER) - 1 AS TEXT) || '-Q4'\n              ELSE substr(cur.quarter, 1, 6) || CAST(CAST(substr(cur.quarter, 7, 1) AS INTEGER) - 1 AS TEXT)\n            END)\n    GROUP BY cur.quarter\n)\nSELECT p.quarter,\n       p.active_customers,\n       COALESCE(r.retained_customers, 0) AS retained_from_prev_quarter,\n       ROUND(100.0 * COALESCE(r.retained_customers, 0) / LAG(p.active_customers) OVER (ORDER BY p.quarter), 1) AS retention_pct,\n       p.active_customers - LAG(p.active_customers) OVER (ORDER BY p.quarter) AS change_vs_prev_quarter\nFROM per_quarter p\nLEFT JOIN retained r ON r.quarter = p.quarter\nORDER BY p.quarter;"
+ },
+ {
+  "id": "17_customer_lifetime_value",
+  "number": 17,
+  "title": "Customer lifetime value",
+  "description": "Customer lifetime value so far: delivered revenue, orders, average order value and active days for each customer, with a value tier. Window function: NTILE(4)",
+  "sql": "-- Customer lifetime value so far: delivered revenue, orders, average order value and\n-- active days for each customer, with a value tier. Window function: NTILE(4)\nWITH per_order AS (\n    SELECT o.customer_id, o.order_id, o.order_date,\n           SUM(i.quantity * i.unit_price) AS order_value\n    FROM orders o\n    JOIN order_items i ON i.order_id = o.order_id\n    WHERE o.status = 'delivered'\n    GROUP BY o.customer_id, o.order_id, o.order_date\n),\nper_customer AS (\n    SELECT customer_id,\n           COUNT(*) AS orders,\n           ROUND(SUM(order_value), 2) AS lifetime_value,\n           ROUND(AVG(order_value), 2) AS avg_order_value,\n           CAST(julianday(MAX(order_date)) - julianday(MIN(order_date)) AS INTEGER) AS active_days\n    FROM per_order\n    GROUP BY customer_id\n)\nSELECT customer_id, orders, lifetime_value, avg_order_value, active_days,\n       CASE NTILE(4) OVER (ORDER BY lifetime_value DESC)\n            WHEN 1 THEN 'Top 25%' WHEN 2 THEN 'Upper middle'\n            WHEN 3 THEN 'Lower middle' ELSE 'Bottom 25%' END AS value_tier\nFROM per_customer\nORDER BY lifetime_value DESC;"
+ },
+ {
+  "id": "18_products_bought_together",
+  "number": 18,
+  "title": "Products bought together",
+  "description": "Which pairs of products are ordered together most often? Self-join on order_items. Only orders that are not cancelled are counted.",
+  "sql": "-- Which pairs of products are ordered together most often? Self-join on order_items.\n-- Only orders that are not cancelled are counted.\nSELECT p1.product_name AS product_a,\n       p2.product_name AS product_b,\n       COUNT(*) AS orders_together\nFROM order_items a\nJOIN order_items b ON a.order_id = b.order_id AND a.product_id < b.product_id\nJOIN orders o ON o.order_id = a.order_id AND o.status <> 'cancelled'\nJOIN products p1 ON p1.product_id = a.product_id\nJOIN products p2 ON p2.product_id = b.product_id\nGROUP BY a.product_id, b.product_id\nORDER BY orders_together DESC, product_a, product_b\nLIMIT 15;"
+ },
+ {
+  "id": "19_customers_at_risk",
+  "number": 19,
+  "title": "Customers at risk",
+  "description": "Repeat customers who have gone quiet: at least 2 delivered orders, and no order of any status in the 90 days before the last order date in the data.",
+  "sql": "-- Repeat customers who have gone quiet: at least 2 delivered orders, and no order of\n-- any status in the 90 days before the last order date in the data.\nWITH last_day AS (SELECT MAX(order_date) AS d FROM orders),\ndelivered AS (\n    SELECT customer_id, COUNT(*) AS delivered_orders\n    FROM orders WHERE status = 'delivered'\n    GROUP BY customer_id HAVING COUNT(*) >= 2\n),\nlatest AS (\n    SELECT customer_id, MAX(order_date) AS last_order FROM orders GROUP BY customer_id\n)\nSELECT c.customer_id, c.name, c.region, d.delivered_orders, l.last_order,\n       CAST(julianday((SELECT d FROM last_day)) - julianday(l.last_order) AS INTEGER) AS days_since_last_order\nFROM delivered d\nJOIN latest l ON l.customer_id = d.customer_id\nJOIN customers c ON c.customer_id = d.customer_id\nWHERE julianday((SELECT d FROM last_day)) - julianday(l.last_order) > 90\nORDER BY d.delivered_orders DESC, days_since_last_order DESC\nLIMIT 25;"
+ },
+ {
+  "id": "20_basket_size_and_value",
+  "number": 20,
+  "title": "Basket size and value",
+  "description": "How does order value change with the number of line items in the basket?",
+  "sql": "-- How does order value change with the number of line items in the basket?\nWITH basket AS (\n    SELECT o.order_id,\n           COUNT(*) AS line_items,\n           SUM(i.quantity) AS units,\n           SUM(i.quantity * i.unit_price) AS order_value\n    FROM orders o\n    JOIN order_items i ON i.order_id = o.order_id\n    WHERE o.status = 'delivered'\n    GROUP BY o.order_id\n)\nSELECT line_items,\n       COUNT(*) AS orders,\n       ROUND(100.0 * COUNT(*) / (SELECT COUNT(*) FROM basket), 1) AS pct_of_orders,\n       ROUND(AVG(units), 2) AS avg_units,\n       ROUND(AVG(order_value), 2) AS avg_order_value\nFROM basket\nGROUP BY line_items\nORDER BY line_items;"
+ },
+ {
+  "id": "21_category_mix_by_region",
+  "number": 21,
+  "title": "Category mix by region",
+  "description": "Share of each region's delivered revenue that comes from each category (a pivot with CASE).",
+  "sql": "-- Share of each region's delivered revenue that comes from each category (a pivot with CASE).\nWITH rev AS (\n    SELECT c.region, p.category, SUM(i.quantity * i.unit_price) AS revenue\n    FROM orders o\n    JOIN customers c ON c.customer_id = o.customer_id\n    JOIN order_items i ON i.order_id = o.order_id\n    JOIN products p ON p.product_id = i.product_id\n    WHERE o.status = 'delivered'\n    GROUP BY c.region, p.category\n)\nSELECT region,\n       ROUND(SUM(revenue), 0) AS total_revenue,\n       ROUND(100.0 * SUM(CASE WHEN category = 'Electronics' THEN revenue END) / SUM(revenue), 1) AS electronics_pct,\n       ROUND(100.0 * SUM(CASE WHEN category = 'Books' THEN revenue END) / SUM(revenue), 1) AS books_pct,\n       ROUND(100.0 * SUM(CASE WHEN category NOT IN ('Electronics', 'Books') THEN revenue END) / SUM(revenue), 1) AS other_pct\nFROM rev\nGROUP BY region\nORDER BY total_revenue DESC;"
+ }
+]

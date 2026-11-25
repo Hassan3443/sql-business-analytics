@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SQL Business Analytics Playground | Hassan Ashraf</title>
+<meta name="description" content="Run the 21 business-analytics SQL queries on a real SQLite database in your browser, edit them, and chart the results.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="grid-bg"></div>
+<main class="wrap">
+  <header>
+    <a class="back" href="https://hassan3443.github.io/">&larr; Portfolio</a>
+    <div class="eyebrow">$ sqlite3 sales.db</div>
+    <h1>SQL business analytics <span class="grad">playground</span></h1>
+    <p class="lead">Pick one of the 21 queries, read it, edit it and run it. The database is real SQLite running in your browser (1,200 customers, 2,187 orders, 3,330 line items, synthetic data). Nothing is sent to a server.</p>
+  </header>
+
+  <div class="layout">
+    <aside class="side card">
+      <h2>Queries</h2>
+      <div id="list"></div>
+      <h2 style="margin-top:18px">Schema</h2>
+      <pre class="schema">customers(customer_id, name,
+          region, signup_date)
+products(product_id, product_name,
+         category, unit_price)
+orders(order_id, customer_id,
+       order_date, status)
+order_items(item_id, order_id,
+            product_id, quantity,
+            unit_price)</pre>
+    </aside>
+
+    <section class="main">
+      <div class="card">
+        <div class="qhead"><h2 id="qtitle">Loading</h2><span id="status" class="status"></span></div>
+        <p id="qdesc" class="desc"></p>
+        <textarea id="sql" spellcheck="false" aria-label="SQL editor"></textarea>
+        <div class="actions"><button id="run" class="run">Run query <kbd>Ctrl</kbd>+<kbd>Enter</kbd></button><button id="reset" class="ghost">Reset to original</button><button id="dl" class="ghost">Download CSV</button></div>
+        <div id="err" class="err"></div>
+      </div>
+      <div class="card" id="chartcard" style="display:none"><div class="qhead"><h2>Chart</h2><label>Column <select id="metric"></select></label></div><div id="chart"></div></div>
+      <div class="card"><div class="qhead"><h2>Result</h2><span id="meta" class="status"></span></div><div class="scroll"><table id="res"></table></div></div>
+    </section>
+  </div>
+  <footer>Source and tests: <a href="https://github.com/Hassan3443/sql-business-analytics">github.com/Hassan3443/sql-business-analytics</a>. SQLite in the browser by <a href="https://sql.js.org">sql.js</a> (MIT).</footer>
+</main>
+<script src="vendor/sql-wasm.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

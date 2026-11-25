@@ -1,0 +1,26 @@
+customer_id,name,region,delivered_orders,last_order,days_since_last_order
+156,Sara Nasser,Cairo,6,2025-08-16,136
+294,Khaled Hassan,Cairo,6,2025-09-04,117
+187,Nour Kamel,Giza,5,2025-02-17,316
+662,Omar Ibrahim,Cairo,5,2025-04-16,258
+1019,Khaled Nasser,Alexandria,5,2025-04-30,244
+1168,Mohamed Kamel,Alexandria,5,2025-05-01,243
+302,Nour Ibrahim,Cairo,5,2025-06-08,205
+587,Mohamed Sayed,Aswan,5,2025-07-17,166
+1193,Khaled Farouk,Alexandria,4,2024-09-05,481
+972,Khaled Nasser,Mansoura,4,2024-09-13,473
+540,Ahmed Fathy,Aswan,4,2025-01-04,360
+117,Sara Ibrahim,Aswan,4,2025-03-08,297
+724,Salma Ibrahim,Cairo,4,2025-04-02,272
+53,Salma Ibrahim,Alexandria,4,2025-05-14,230
+440,Sara Adel,Alexandria,4,2025-05-25,219
+511,Sara Farouk,Cairo,4,2025-05-28,216
+106,Khaled Adel,Aswan,4,2025-06-16,197
+699,Mariam Adel,Giza,4,2025-06-24,189
+109,Khaled Ali,Alexandria,4,2025-07-01,182
+178,Omar Adel,Giza,4,2025-07-10,173
+785,Mariam Mahmoud,Alexandria,4,2025-07-21,162
+372,Salma Kamel,Alexandria,4,2025-07-30,153
+43,Salma Adel,Cairo,4,2025-08-09,143
+477,Omar Adel,Mansoura,4,2025-08-16,136
+916,Mariam Hassan,Cairo,4,2025-08-17,135
