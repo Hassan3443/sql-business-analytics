@@ -56,7 +56,7 @@ order_items (item_id, order_id, product_id, quantity, unit_price)
 - **Revenue is concentrated:** the top 20% of customers (deciles 1-2) bring 51% of delivered revenue, the bottom 20% just 2.4%. The top quarter of customers by lifetime value brings 58.6% of it (query 17)
 - Quarter-to-quarter retention is low, 13% to 22%
 - Cairo holds 37% of delivered revenue; the gap from Cairo to the next region (Alexandria) is about 746K EGP
-- **59% of orders (query 20 basis) have a single line item.** Average order value rises from 1,860 EGP (1 item) to 5,587 EGP (3 items)
+- **59% of delivered orders have a single line item.** Average order value rises from 1,860 EGP (1 item) to 5,587 EGP (3 items)
 - **Top product pair:** Bluetooth Speaker with T-Shirt, in 13 orders (query 18). **336 repeat customers** have no order in the last 90 days of data (query 19, first 25 listed)
 
 Full result tables in [results/](results/).
